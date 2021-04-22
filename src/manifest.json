@@ -1,14 +1,26 @@
 {
+  "version": "1.0",
   "manifest_version": 3,
-  "name": "Chrome Extension with React & Webpack",
+  "name": "Blloc Ratio Screen Time",
+
   "options_page": "options.html",
-  "background": { "service_worker": "background.bundle.js" },
+  "background": { 
+    "service_worker": "background.bundle.js" 
+  },
+
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "icon-34.png"
+    "default_icon": "icon-34.png",
+
+    "permissions": [
+      "storage",
+      "tabs",
+      "https://www.instagram.com/",
+      "https://www.twitter.com/"
+    ]
   },
   "chrome_url_overrides": {
-    "newtab": "newtab.html"
+    "newtab": "options.html"
   },
   "icons": {
     "128": "icon-128.png"
@@ -23,8 +35,10 @@
   "devtools_page": "devtools.html",
   "web_accessible_resources": [
     {
-      "resources": ["content.styles.css", "icon-128.png", "icon-34.png"],
-      "matches": []
+      "resources": ["/assets/content.styles.css", "/assets/icon-128.png", "/assets/icon-34.png"],
+      "matches": ["<all_urls>"]
     }
   ]
 }
+
+
