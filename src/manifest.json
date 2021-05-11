@@ -2,22 +2,13 @@
   "version": "1.0",
   "manifest_version": 3,
   "name": "Blloc Ratio Screen Time",
-
   "options_page": "options.html",
-  "background": { 
-    "service_worker": "background.bundle.js" 
+  "background": {
+    "service_worker": "background.bundle.js"
   },
-
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "icon-34.png",
-
-    "permissions": [
-      "storage",
-      "tabs",
-      "https://www.instagram.com/",
-      "https://www.twitter.com/"
-    ]
+    "default_icon": "icon-34.png"
   },
   "chrome_url_overrides": {
     "newtab": "options.html"
@@ -27,18 +18,37 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*", "<all_urls>"],
-      "js": ["contentScript.bundle.js"],
-      "css": ["content.styles.css"]
+      "matches": [
+        "http://*/*",
+        "https://*/*",
+        "<all_urls>"
+      ],
+      "js": [
+        "contentScript.bundle.js"
+      ],
+      "css": [
+        "content.styles.css"
+      ]
     }
+  ],
+  "permissions": [
+    "storage",
+    "tabs",
+    "allTabs",
+    "activeTab",
+    "<all_urls>"
   ],
   "devtools_page": "devtools.html",
   "web_accessible_resources": [
     {
-      "resources": ["/assets/content.styles.css", "/assets/icon-128.png", "/assets/icon-34.png"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "/assets/content.styles.css",
+        "/assets/icon-128.png",
+        "/assets/icon-34.png"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }
-
-
