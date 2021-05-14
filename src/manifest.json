@@ -34,9 +34,10 @@
   "permissions": [
     "storage",
     "tabs",
-    "allTabs",
     "activeTab",
-    "<all_urls>"
+    "<all_urls>",
+    "sessions",
+    "storage"
   ],
   "devtools_page": "devtools.html",
   "web_accessible_resources": [
