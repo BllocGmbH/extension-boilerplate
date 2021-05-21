@@ -36,8 +36,7 @@
     "tabs",
     "activeTab",
     "<all_urls>",
-    "sessions",
-    "storage"
+    "sessions"
   ],
   "devtools_page": "devtools.html",
   "web_accessible_resources": [
