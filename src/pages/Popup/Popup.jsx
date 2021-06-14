@@ -5,20 +5,11 @@ import './Popup.css';
 
 const Popup = () => {
   return (
-    <div className="App">
+    <div class="body-container" className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          halloo
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React!
-        </a>
+        <div>
+          Ratio Time Tracker 
+        </div>
       </header>
     </div>
   );

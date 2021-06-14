@@ -7,78 +7,139 @@ console.log('Put the background scripts here.');
 
 // ->>>>>>>>>>>>>>>>>>>>> chrome.sessions.Session.addListener.lastModified
 
-var allTimeStamps = [];
-var tabMatrix = [];
-var domainTimes = {}
-var domain
-var newElapsedTime
+const allTimeStamps = [Date.now()];
+const domainTimes = {};
+const tabMatrix = [];
+var domain = location.host;
+const allDomains = [`${domain}`];
+var newElapsedTime;
+
+function tabsQuery(tabs) {
+  var date = [Date.now()];
+
+  allTimeStamps.push(date);
+
+  // Perform subtraction - elapsed time spent on the latest tab
+  var latestTimestamp = allTimeStamps[allTimeStamps.length - 1];
+  var secondLatestTimestamp = allTimeStamps[allTimeStamps.length - 2];
+  //var newElapsedTime = latestTimestamp - secondLatestTimestamp;
+  var newElapsedTime = (((latestTimestamp - secondLatestTimestamp) % 60000) / 1000).toFixed(0);
+  console.log(newElapsedTime);  
+  
+
+
+  var current = tabs[0];
+  console.log('this is current.url ------------->', current.url);
+  
+
+  var currentURL = current.url;
+
+  var domain = currentURL
+    .replace('https://', '')
+    .replace('http://', '')
+    .replace('www.', '')
+    .split(/[/?#]/)[0]
+    // .split('.').slice(1).join('.');
+    // .substring(0, currentURL.indexOf(".")+1);
+
+console.log('this is domain ------------->', domain)
+
+  // Assign time to previous domain (when new tab is accessed)
+  var previousDomain = allDomains[allDomains.length - 1];
+  allDomains.push(domain);
+  var tabMatrix = [];
+
+  function timeStampCollector() {
+    domainTimes[previousDomain] = domainTimes[previousDomain] || {
+      timeStamps: [],
+    };
+    const thisDomainTimes = domainTimes[previousDomain];
+
+    if (allDomains.includes(previousDomain) && currentURL.includes(domain)) {
+      // if this domain is included in domain list, push it to tab Matrix
+      thisDomainTimes.timeStamps.push(newElapsedTime);
+
+      // let sum = thisDomainTimes.timeStamps.reduce((accumulator, currentValue) => {
+      //   return accumulator + currentValue;
+      // });
+
+      // console.log("this domain times summed up" + thisDomainTimes.timeStamps)
+
+      
+      
+      return [domainTimes];
+      
+
+    }
+
+
+      // then sum up the time for each domain each time the time is updated
+    // let sum = thisDomainTimes.timeStamps.reduce((accumulator, currentValue) => {
+
+    //   return accumulator + currentValue;
+    // });
+   
+
+   
+  }
+
+  console.log(timeStampCollector());
+  
+}
+
+// When tab is activated/selected. SetTimeout required for updated ChomeV to avoid runtime bug.
+
+// chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
+//   chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabsQuery);
+// });
+
 
 chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
-
-// 1. Push every new date ingo global variable
-    var date = Date.now();
-    allTimeStamps.push(date);
-
-// 2. Perform subtraction - elapsed time spend on the latest tab
-    var latestTimestamp = allTimeStamps[allTimeStamps.length-1]
-    var secondLatestTimestamp = allTimeStamps[allTimeStamps.length-2]
-    var newElapsedTime =  latestTimestamp - secondLatestTimestamp
-    console.log(newElapsedTime);
-
-//3. Query tab data
-  chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
-    var current = tabs[0];
-    console.log('-------------> this is an open tab', current.url);
-
-    var currentURL = current.url;
-    
-    var domain = currentURL
-        .replace('https://', '')
-        .replace('http://', '')
-        .replace('www.', '')
-        .split(/[/?#]/)[0];
-
-    
-
-    function timeStampCollector() {
-
-        var domainTimes = {
-        homeDomain: domain,
-        timeStamps: [] 
-        
-    };  
-
-    // TO DO: 
-   // 4.1 Create array for all visited sites (home domains)
-   // 4.2 Check if domain key already exists. If not, push domain key/value and after that push elapsed time under the domain
-          
-
-      if (currentURL.includes(domain)) {
-
-
-        domainTimes.timeStamps.push(newElapsedTime);
-
-        return domainTimes
-
-
-        // domainTimes.timeStamps.push(newElapsedTime); //returns undefined for now
-        // tabMatrix.push(domainTimes)
-        
-      } else {
-        // 
-      }
-
-      return tabMatrix; 
-    }
-    
-    console.log(timeStampCollector());
-  });
-  
+  setTimeout(() => { 
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabsQuery);
+  }, 500); 
 });
 
 
-console.log('this is tab matrix', tabMatrix);
+// When tab is updated, eg: new link.
+chrome.tabs.onUpdated.addListener(({ tabID, changeInfo, tab }, tabs) => {
+  if (tabs.status === 'complete') {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabsQuery);
+  }
+});
 
+// When tab is detached or moved between windows
+chrome.tabs.onAttached.addListener(({ tabId, detachInfo }) => {
+  chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabsQuery);
+  console.log("this is DETACHED window")
+});
+
+
+// When tab is attached to another window
+chrome.tabs.onAttached.addListener(({ tabId, attachInfo }) => {
+  chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabsQuery);
+  console.log("this is ATTACHED window")
+
+});
+
+// When tab is moved WITHIN a window. Pushes time into array spent in tab before and after the move, ance the tab is not active anymore.
+chrome.tabs.onMoved.addListener(({ tabId, moveInfo, tab }, tabs) => {
+
+ setTimeout(() => { 
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabsQuery);
+  }, 500); 
+
+  console.log("this is MOVED window")
+
+});
+
+
+// highlighted tab
+// chrome.tabs.onHighlighted.addListener(({ tabId, highlightInfo }) => {
+//   chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabsQuery);
+//   console.log("this is Highlighted window")
+
+// });
 
 
 
@@ -100,21 +161,6 @@ console.log('this is tab matrix', tabMatrix);
 
 // ------------------> When tab gets updated: new url
 
-// chrome.tabs.onUpdated.addListener(({ tabID, changeInfo }) => {
-//   chrome.tabs.query(
-//     { active: true, currentWindow: true, status: 'complete' },
-//     function (tabs) {
-//       // Toggle the pinned status
-//       let dateInactive = Date.now();
-//       var current = tabs[0];
-//       console.log(current.id);
-//       console.log(current.url);
-//       console.log(dateInactive);
-//       //  console.log(current.windowId);
-//     }
-//   );
-// });
-
 // chrome.tabs.onHighlighted.addListener(({ tabIds, windowId }) => {
 //   chrome.tabs.query(
 //     { active: true, currentWindow: true },
@@ -129,7 +175,6 @@ console.log('this is tab matrix', tabMatrix);
 //     }
 //   );
 // });
-
 
 //    chrome.tabs.onAttached.addListener(({ tabId, attachInfo }) => {
 //     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -179,24 +224,17 @@ console.log('this is tab matrix', tabMatrix);
 
 chrome.tabs.query({ active: false });
 
-
-// ------- > 
+// ------- >
 chrome.runtime.onInstalled.addListener(() => {
-    // default state of chrome extensiton, runs once and every time extension is installed
-    chrome.storage.local.set({
-
-    });
+  // default state of chrome extensiton, runs once and every time extension is installed
+  chrome.storage.local.set({});
 });
 
-chrome.storage.local.get("name", data => {
-// retrieves stored data
+chrome.storage.local.get('name', (data) => {
+  // retrieves stored data
 });
-
-
 
 // ------------------------------- archive ----------------------------------
-
-
 
 // function timeStampCollector() {
 
